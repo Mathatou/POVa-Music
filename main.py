@@ -6,6 +6,7 @@ def RenderCamera():
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
+    print("test")
     while True:
         # Capture frame-by-frame
         ret, frame = cap.read()
