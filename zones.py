@@ -5,6 +5,7 @@ def get_zone_index(y):
     Get the zone index based on the y-coordinate of the middle finger base.
     The y-coordinate should be normalized between 0 and 1, where 0 is the top of the image and 1 is the bottom.
     
+    The zone 0 is at the bottom of the image, and zone 11 (NUM_ZONES - 1) is at the top of the image.
     Args : 
         y (float): The normalized y-coordinate of the point (between 0 and 1).
     Returns :
