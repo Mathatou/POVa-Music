@@ -2,10 +2,8 @@ import numpy as np
 import cv2 as cv
 import mediapipe as mp
 import time
+from config import PITCH_HAND, VOLUME_HAND, NUM_ZONES
 
-PITCH_HAND = "Left"
-VOLUME_HAND = "Right"
-NUM_ZONES = 12
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
 HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions

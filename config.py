@@ -1,0 +1,3 @@
+PITCH_HAND = "Left"
+VOLUME_HAND = "Right"
+NUM_ZONES = 12
