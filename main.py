@@ -32,14 +32,14 @@ def RenderCamera():
         timestamp_ms = int(time.monotonic() * 1000)
         tracker.detect(mp_image, timestamp_ms)
         hands = tracker.get_hands()
-        
+
         if hands.pitch:
             pitchCoord = (int(hands.pitch.x * width), int(hands.pitch.y * height))
-            cv.circle(frame, pitchCoord, 5, (0, 0, 255), -1)
+            cv.circle(frame, pitchCoord, 5, (0, 255, 0), -1) # green for pitch (left) hand
 
         if hands.volume:
             volumeCoord = (int(hands.volume.x * width), int(hands.volume.y * height))
-            cv.circle(frame, volumeCoord, 5, (255, 0, 0), -1)
+            cv.circle(frame, volumeCoord, 5, (255, 0, 0), -1) # blue for volume (right) hand
         # Display the resulting frame    
         frame = cv.flip(frame, 1) #flip the frame horizontally
 
