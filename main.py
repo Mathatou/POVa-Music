@@ -4,26 +4,8 @@ import mediapipe as mp
 import time
 from config import PITCH_HAND, VOLUME_HAND, NUM_ZONES
 from zones import get_zone_index
+from tracking import HandTracker, Hands, Hand
 
-BaseOptions = mp.tasks.BaseOptions
-HandLandmarker = mp.tasks.vision.HandLandmarker
-HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
-VisionRunningMode = mp.tasks.vision.RunningMode
-latest_result = None
-
-def on_result(result, output_image: mp.Image, timestamp_ms: int):
-    global latest_result
-    if latest_result is not None:
-        pass
-    latest_result = result
-
-
-options = HandLandmarkerOptions(
-    base_options=BaseOptions(model_asset_path='hand_landmarker.task'),
-    running_mode=VisionRunningMode.LIVE_STREAM,
-    num_hands=2,
-    result_callback=on_result,
-)
 
 def RenderCamera():
     global latest_result
@@ -31,8 +13,9 @@ def RenderCamera():
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
-    landmarker = HandLandmarker.create_from_options(options)
+    tracker = HandTracker()
     while True:
+        print(tracker.get_hands())
         # Capture frame-by-frame
         ret, frame = cap.read()
         # if frame is read correctly ret is True
@@ -47,33 +30,19 @@ def RenderCamera():
         rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
         timestamp_ms = int(time.monotonic() * 1000)
-        landmarker.detect_async(mp_image, timestamp_ms)
+        tracker.detect(mp_image, timestamp_ms)
+        hands = tracker.get_hands()
+        
+        if hands.pitch:
+            pitchCoord = (int(hands.pitch.x * width), int(hands.pitch.y * height))
+            cv.circle(frame, pitchCoord, 5, (0, 0, 255), -1)
 
-        if latest_result is not None and latest_result.hand_landmarks:
-            for idx, hand_landmarks in enumerate(latest_result.hand_landmarks):
-                handInfo = latest_result.handedness[idx][0]
-                hand_label = handInfo.category_name
-                score = handInfo.score
-                middleFingerBase = hand_landmarks[9]  # middle finger base landmark
-                middleFingerBaseCoords = (int(middleFingerBase.x * width), int(middleFingerBase.y * height))    
-                cv.circle(frame,middleFingerBaseCoords, 5, (0,255,0),-1) #draw a circle on the first landmark of the first hand
-                for i in range(NUM_ZONES): # Get rid of ? 
-                    y = int(i * height_per_zone)
-                    cv.line(frame, (0, y), (width, y), (255, 0, 0), 1)  # Draw horizontal lines for zones
-                zone_index = get_zone_index(middleFingerBaseCoords[1]/height)  # Get the zone index based on the y-coordinate of the middle finger base
-                labelsToDraw = np.append(labelsToDraw, (f"Hand {idx}: {hand_label} ({score:.2f}) is in zone {zone_index}"))
-
-                if hand_label == PITCH_HAND:
-                    # Handle pitch control logic here
-                    # print("Pitch control activated")
-                    pass
-                elif hand_label == VOLUME_HAND:
-                    # Handle volume control logic here
-                    # print("Volume control activated")
-                    pass
-
+        if hands.volume:
+            volumeCoord = (int(hands.volume.x * width), int(hands.volume.y * height))
+            cv.circle(frame, volumeCoord, 5, (255, 0, 0), -1)
         # Display the resulting frame    
         frame = cv.flip(frame, 1) #flip the frame horizontally
+
         cv.putText(frame, "Press 'q' to quit", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         if labelsToDraw.size > 0:
             cv.putText(frame,labelsToDraw[0], (10, 70), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
