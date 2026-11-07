@@ -32,7 +32,6 @@ def RenderCamera():
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
-    print("test")
     landmarker = HandLandmarker.create_from_options(options)
     while True:
         # Capture frame-by-frame
@@ -43,6 +42,7 @@ def RenderCamera():
             break
         width, height = frame.shape[1], frame.shape[0]
         height_per_zone = height / NUM_ZONES
+        labelsToDraw = np.array((), dtype=object)
         
         # Convert the BGR image to RGB before processing.
         rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
@@ -61,21 +61,24 @@ def RenderCamera():
                 for i in range(NUM_ZONES): # Get rid of ? 
                     y = int(i * height_per_zone)
                     cv.line(frame, (0, y), (width, y), (255, 0, 0), 1)  # Draw horizontal lines for zones
-                zone_index = NUM_ZONES - int(middleFingerBaseCoords[1] / height_per_zone)
+                zone_index = NUM_ZONES - 1 - int(middleFingerBaseCoords[1] / height_per_zone)
                 zone_index = max(0, min(zone_index, NUM_ZONES - 1))
-                # print(f"Hand {idx}: {hand_label} ({score:.2f}) is in zone {zone_index+1}")
+                labelsToDraw = np.append(labelsToDraw, (f"Hand {idx}: {hand_label} ({score:.2f}) is in zone {zone_index}"))
 
                 if hand_label == PITCH_HAND:
                     # Handle pitch control logic here
-                    print("Pitch control activated")
+                    # print("Pitch control activated")
                     pass
                 elif hand_label == VOLUME_HAND:
                     # Handle volume control logic here
-                    print("Volume control activated")
+                    # print("Volume control activated")
                     pass
 
         # Display the resulting frame    
         frame = cv.flip(frame, 1) #flip the frame horizontally
+        cv.putText(frame, "Press 'q' to quit", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        if labelsToDraw.size > 0:
+            cv.putText(frame,labelsToDraw[0], (10, 70), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         cv.imshow('MusicGen',frame)
         if cv.waitKey(1) == ord('q'): #close on 'q' key
             break
