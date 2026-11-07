@@ -3,6 +3,7 @@ import cv2 as cv
 import mediapipe as mp
 import time
 from config import PITCH_HAND, VOLUME_HAND, NUM_ZONES
+from zones import get_zone_index
 
 BaseOptions = mp.tasks.BaseOptions
 HandLandmarker = mp.tasks.vision.HandLandmarker
@@ -59,8 +60,7 @@ def RenderCamera():
                 for i in range(NUM_ZONES): # Get rid of ? 
                     y = int(i * height_per_zone)
                     cv.line(frame, (0, y), (width, y), (255, 0, 0), 1)  # Draw horizontal lines for zones
-                zone_index = NUM_ZONES - 1 - int(middleFingerBaseCoords[1] / height_per_zone)
-                zone_index = max(0, min(zone_index, NUM_ZONES - 1))
+                zone_index = get_zone_index(middleFingerBaseCoords[1],height_per_zone)  # Get the zone index based on the y-coordinate of the middle finger base
                 labelsToDraw = np.append(labelsToDraw, (f"Hand {idx}: {hand_label} ({score:.2f}) is in zone {zone_index}"))
 
                 if hand_label == PITCH_HAND:
