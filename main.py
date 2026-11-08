@@ -2,12 +2,17 @@ import numpy as np
 import cv2 as cv
 import mediapipe as mp
 import time
-from config import PITCH_HAND, VOLUME_HAND, NUM_ZONES
-from zones import get_zone_index
+from config import NUM_ZONES
 from tracking import HandTracker, Hands, Hand
 
 
 def RenderCamera():
+    """
+    Capture video from the camera, detect hands, and display the video with hand landmarks.
+    The function uses the HandTracker class to detect hands in real-time and draws circles on the
+    middle finger base of the detected hands. The video feed is displayed in a window, and
+    the user can exit the loop by pressing the 'q' key.
+    """
     global latest_result
     cap = cv.VideoCapture(0)
     if not cap.isOpened():

@@ -5,12 +5,25 @@ from config import PITCH_HAND, VOLUME_HAND
 
 @dataclass
 class Hand:
+    """
+    A dataclass representing a hand with its middle finger base coordinates and fist status.
+    Attributes:
+        x (float): The x-coordinate of the middle finger base, normalized between 0 and 1.
+        y (float): The y-coordinate of the middle finger base, normalized between 0 and 1.
+        is_fist (bool): A boolean indicating whether the hand is in a fist position.
+    """
     x : float
     y : float
     is_fist : bool
 
 @dataclass
 class Hands : 
+    """
+    A dataclass representing the detected hands for pitch and volume control.
+    Attributes:
+        pitch (Optional[Hand]): The detected pitch hand, or None if not detected.
+        volume (Optional[Hand]): The detected volume hand, or None if not detected.
+    """
     pitch  : Optional[Hand]
     volume : Optional[Hand]
       
@@ -34,9 +47,20 @@ class HandTracker:
         self.latest_result = result
 
     def detect(self, mp_image, timestamp_ms):
+        """
+        Detect hands in the given image.
+        Args:
+            mp_image (mp.Image): The input image in mediapipe format.
+            timestamp_ms (int): The timestamp in milliseconds for the image.
+        """
         self.landmarker.detect_async(mp_image, timestamp_ms)
         
     def get_hands(self):
+        """
+        Get the detected hands and their middle finger base coordinates.
+        Returns:
+            Hands: A dataclass containing the pitch and volume hands with their coordinates.
+        """
         result = self.latest_result
         pitch_hand = None
         volume_hand = None            
