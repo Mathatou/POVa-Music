@@ -1,7 +1,7 @@
 import mediapipe as mp
 from dataclasses import dataclass
 from typing import Optional
-from config import PITCH_HAND, VOLUME_HAND
+from config import PITCH_HAND, VOLUME_HAND, TASK_MODEL_PATH
 
 @dataclass
 class Hand:
@@ -35,7 +35,7 @@ class HandTracker:
         HandLandmarkerOptions = mp.tasks.vision.HandLandmarkerOptions
         VisionRunningMode = mp.tasks.vision.RunningMode
         options = HandLandmarkerOptions(
-            base_options=BaseOptions(model_asset_path='hand_landmarker.task'),
+            base_options=BaseOptions(model_asset_path=TASK_MODEL_PATH),
             running_mode=VisionRunningMode.LIVE_STREAM,
             num_hands=2,
             result_callback=self.on_result,
