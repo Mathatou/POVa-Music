@@ -13,7 +13,6 @@ def RenderCamera():
     middle finger base of the detected hands. The video feed is displayed in a window, and
     the user can exit the loop by pressing the 'q' key.
     """
-    global latest_result
     cap = cv.VideoCapture(0)
     if not cap.isOpened():
         print("Cannot open camera")
@@ -28,7 +27,6 @@ def RenderCamera():
             print("Can't receive frame (stream end?). Exiting ...")
             break
         width, height = frame.shape[1], frame.shape[0]
-        height_per_zone = height / NUM_ZONES
         labelsToDraw = np.array((), dtype=object)
         
         # Convert the BGR image to RGB before processing.
@@ -40,11 +38,19 @@ def RenderCamera():
 
         if hands.pitch:
             pitchCoord = (int(hands.pitch.x * width), int(hands.pitch.y * height))
-            cv.circle(frame, pitchCoord, 5, (0, 255, 0), -1) # green for pitch (left) hand
+            if hands.pitch.is_fist:
+                color = (255, 120, 255)
+            else:
+                color = (0, 255, 0)
+            cv.circle(frame, pitchCoord, 5, color, -1) # green for pitch (left) hand
 
         if hands.volume:
             volumeCoord = (int(hands.volume.x * width), int(hands.volume.y * height))
-            cv.circle(frame, volumeCoord, 5, (255, 0, 0), -1) # blue for volume (right) hand
+            if hands.volume.is_fist:
+                color = (255, 0, 255)
+            else:
+                color = (255, 0, 0)
+            cv.circle(frame, volumeCoord, 5, color, -1) # blue for volume (right) hand
         # Display the resulting frame    
         frame = cv.flip(frame, 1) #flip the frame horizontally
 

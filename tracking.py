@@ -2,6 +2,7 @@ import mediapipe as mp
 from dataclasses import dataclass
 from typing import Optional
 from config import PITCH_HAND, VOLUME_HAND, TASK_MODEL_PATH
+from gestures import is_hand_fist
 
 @dataclass
 class Hand:
@@ -72,9 +73,9 @@ class HandTracker:
             middleFingerBase = hand_landmarks[9]  # middle finger base landmark
             
             if hand_label == PITCH_HAND:
-                pitch_hand = Hand(x=middleFingerBase.x, y=middleFingerBase.y, is_fist=False)  # Placeholder for is_fist logic
+                pitch_hand = Hand(x=middleFingerBase.x, y=middleFingerBase.y, is_fist = is_hand_fist(pHand_landmarks=hand_landmarks))
             elif hand_label == VOLUME_HAND:
-                volume_hand = Hand(x=middleFingerBase.x, y=middleFingerBase.y, is_fist=False)  # Placeholder for is_fist logic
+                volume_hand = Hand(x=middleFingerBase.x, y=middleFingerBase.y, is_fist = is_hand_fist(pHand_landmarks=hand_landmarks))
         return Hands(pitch=pitch_hand, volume=volume_hand)
 
 
