@@ -15,6 +15,3 @@ def get_zone_index(y):
     zone_index = NUM_ZONES - 1 - int(y * NUM_ZONES)
     zone_index = max(0, min(zone_index, NUM_ZONES - 1))
     return zone_index
-
-if __name__ == "__main__":
-    print(get_zone_index(0.0), get_zone_index(0.5), get_zone_index(1.0))

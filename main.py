@@ -4,7 +4,7 @@ import mediapipe as mp
 import time
 from config import NUM_ZONES
 from tracking import HandTracker, Hands, Hand
-
+from zones import get_zone_index
 
 def RenderCamera():
     """
@@ -43,7 +43,7 @@ def RenderCamera():
             else:
                 color = (0, 255, 0)
             cv.circle(frame, pitchCoord, 5, color, -1) # green for pitch (left) hand
-
+            labelsToDraw = np.append(labelsToDraw, f"Pitch Zone: {get_zone_index(hands.pitch.y)}")
         if hands.volume:
             volumeCoord = (int(hands.volume.x * width), int(hands.volume.y * height))
             if hands.volume.is_fist:
@@ -51,12 +51,14 @@ def RenderCamera():
             else:
                 color = (255, 0, 0)
             cv.circle(frame, volumeCoord, 5, color, -1) # blue for volume (right) hand
+            labelsToDraw = np.append(labelsToDraw, f"Volume Zone: {get_zone_index(hands.volume.y)}")
         # Display the resulting frame    
         frame = cv.flip(frame, 1) #flip the frame horizontally
 
         cv.putText(frame, "Press 'q' to quit", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         if labelsToDraw.size > 0:
-            cv.putText(frame,labelsToDraw[0], (10, 70), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+            for i, label in enumerate(labelsToDraw):
+                cv.putText(frame, label, (10, 70 + i * 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
         cv.imshow('MusicGen',frame)
         if cv.waitKey(1) == ord('q'): #close on 'q' key
             break
