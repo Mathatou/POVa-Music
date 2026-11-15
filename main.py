@@ -4,7 +4,7 @@ import mediapipe as mp
 import time
 from config import DEBUG_MODE
 from tracking import HandTracker
-from display import display_hands, display_options, display_labelsToDraw, display_zones
+from display import display_labelsToDraw
 
 
 
