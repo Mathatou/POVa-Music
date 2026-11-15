@@ -2,11 +2,14 @@ import numpy as np
 import cv2 as cv
 import mediapipe as mp
 import time
-from config import NUM_ZONES
-from tracking import HandTracker, Hands, Hand
-from zones import get_zone_index
+from config import DEBUG_MODE
+from tracking import HandTracker
+from display import display_hands, display_options, display_labelsToDraw, display_zones
+
+
 
 def RenderCamera():
+    global DEBUG_MODE
     """
     Capture video from the camera, detect hands, and display the video with hand landmarks.
     The function uses the HandTracker class to detect hands in real-time and draws circles on the
@@ -19,7 +22,7 @@ def RenderCamera():
         exit()
     tracker = HandTracker()
     while True:
-        print(tracker.get_hands())
+        # print(tracker.get_hands())
         # Capture frame-by-frame
         ret, frame = cap.read()
         # if frame is read correctly ret is True
@@ -36,32 +39,16 @@ def RenderCamera():
         tracker.detect(mp_image, timestamp_ms)
         hands = tracker.get_hands()
 
-        if hands.pitch:
-            pitchCoord = (int(hands.pitch.x * width), int(hands.pitch.y * height))
-            if hands.pitch.is_fist:
-                color = (255, 120, 255)
-            else:
-                color = (0, 255, 0)
-            cv.circle(frame, pitchCoord, 5, color, -1) # green for pitch (left) hand
-            labelsToDraw = np.append(labelsToDraw, f"Pitch Zone: {get_zone_index(hands.pitch.y)}")
-        if hands.volume:
-            volumeCoord = (int(hands.volume.x * width), int(hands.volume.y * height))
-            if hands.volume.is_fist:
-                color = (255, 0, 255)
-            else:
-                color = (255, 0, 0)
-            cv.circle(frame, volumeCoord, 5, color, -1) # blue for volume (right) hand
-            labelsToDraw = np.append(labelsToDraw, f"Volume Zone: {get_zone_index(hands.volume.y)}")
-        # Display the resulting frame    
         frame = cv.flip(frame, 1) #flip the frame horizontally
-
-        cv.putText(frame, "Press 'q' to quit", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-        if labelsToDraw.size > 0:
-            for i, label in enumerate(labelsToDraw):
-                cv.putText(frame, label, (10, 70 + i * 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        if DEBUG_MODE is True:
+            display_labelsToDraw(frame, hands, labelsToDraw)
         cv.imshow('MusicGen',frame)
-        if cv.waitKey(1) == ord('q'): #close on 'q' key
+        key = cv.waitKey(1)
+        if key == ord('q'): #close on 'q' key
             break
+        if key == ord('d'): #toggle debug mode on 'd' key
+            DEBUG_MODE = not DEBUG_MODE
+            print(f"Debug mode: {DEBUG_MODE}")
     
     # When everything done, release the capture
     cap.release()
