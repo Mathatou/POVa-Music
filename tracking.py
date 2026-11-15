@@ -30,6 +30,11 @@ class Hands :
       
 
 class HandTracker:
+    """
+    A class for tracking hands in a video stream.
+    This class uses MediaPipe's HandLandmarker to detect hands in real-time and provides
+    the coordinates of the middle finger base for each detected hand. It also determines if the hand is in a fist position.
+    """
     def __init__(self):
         BaseOptions = mp.tasks.BaseOptions
         HandLandmarker = mp.tasks.vision.HandLandmarker
