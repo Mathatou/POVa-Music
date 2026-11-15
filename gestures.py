@@ -3,7 +3,7 @@ import math
 FINGER_TIP_INDICES = [8, 12, 16, 20]  
 # Threshold for determining if the hand is in a fist position
 WRIST_THRESHOLD = 1.0  
-def is_hand_fist(pHand_landmarks):
+def is_hand_closed(pHand_landmarks):
     """
     Determines if the hand is in a fist position based on the landmarks of the hand.
 
