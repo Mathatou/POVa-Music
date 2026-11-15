@@ -1,44 +1,47 @@
 import cv2 as cv
-import numpy as np
-from zones import get_zone_index
 from config import NUM_ZONES
 
+FONT = cv.FONT_HERSHEY_SIMPLEX
+# Couleurs en BGR (ordre OpenCV) : (ouverte, poing)
+PITCH_COLORS = ((0, 255, 0), (255, 120, 255))
+VOLUME_COLORS = ((255, 0, 0), (255, 0, 255))
 
-def display_zones(pFrame, pWidth, pHeight):
+
+def _draw_zone_lines(pFrame):
+    height, width = pFrame.shape[:2]
     for i in range(1, NUM_ZONES):
-        cv.line(pFrame, (0, int(pHeight / NUM_ZONES) * i), (pWidth, int(pHeight / NUM_ZONES) * i), (255, 255, 255), 2)
+        y = int(i * height / NUM_ZONES)
+        cv.line(pFrame, (0, y), (width, y), (255, 255, 255), 1)
 
 
-def display_hands(pHands, pWidth, pHeight, pFrame, pLabelsToDraw):
+def _draw_hand(pFrame, pHand, pColors):
+    height, width = pFrame.shape[:2]
+    x = width - 1 - int(pHand.x * width)
+    y = int(pHand.y * height)
+    color = pColors[1] if pHand.is_fist else pColors[0]
+    cv.circle(pFrame, (x, y), 8, color, -1)
+
+
+def _hand_text(pName, pZone, pHand):
+    state = "fist" if pHand.is_fist else "open"
+    return f"{pName} zone: {pZone} ({state})"
+
+
+def draw_overlay(pFrame, pHands, pPitchZone, pVolumeZone):
+    """
+    Dessine tout l'affichage de debug sur une frame déjà retournée.
+    pPitchZone / pVolumeZone valent None si la main correspondante est absente.
+    Cette fonction ne calcule rien : elle ne fait que dessiner.
+    """
+    _draw_zone_lines(pFrame)
+
+    lines = ["Press 'q' to quit", "Press 'd' to toggle debug mode"]
     if pHands.pitch:
-        pitchCoord = (pWidth-1-int(pHands.pitch.x * pWidth), int(pHands.pitch.y * pHeight))
-        if pHands.pitch.is_fist:
-            color = (255, 120, 255)
-        else:
-            color = (0, 255, 0)
-        cv.circle(pFrame, pitchCoord, 5, color, -1) # green for pitch (left) hand
-
-        pLabelsToDraw = np.append(pLabelsToDraw, f"Pitch Zone: {get_zone_index(pHands.pitch.y)}")
+        _draw_hand(pFrame, pHands.pitch, PITCH_COLORS)
+        lines.append(_hand_text("Pitch", pPitchZone, pHands.pitch))
     if pHands.volume:
-        volumeCoord = (pWidth-1-int(pHands.volume.x * pWidth), int(pHands.volume.y * pHeight))
-        if pHands.volume.is_fist:
-            color = (255, 0, 255)
-        else:
-            color = (255, 0, 0)
-        cv.circle(pFrame, volumeCoord, 5, color, -1) # blue for volume (right) hand
-        pLabelsToDraw = np.append(pLabelsToDraw, f"Volume Zone: {get_zone_index(pHands.volume.y)}")
-            
-    return pLabelsToDraw
+        _draw_hand(pFrame, pHands.volume, VOLUME_COLORS)
+        lines.append(_hand_text("Volume", pVolumeZone, pHands.volume))
 
-
-def display_options(pFrame):
-    cv.putText(pFrame, "Press 'q' to quit", (10, 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    cv.putText(pFrame, "Press 'd' to toggle debug mode", (10, 60), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-
-def display_labelsToDraw(pFrame, pHands, pLabelsToDraw):
-    if pLabelsToDraw.size > 0:
-        for i, label in enumerate(pLabelsToDraw):
-            cv.putText(pFrame, label, (10, 70 + i * 30), cv.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-    display_options(pFrame)
-    display_zones(pFrame, pFrame.shape[1], pFrame.shape[0])
-    pLabelsToDraw = np.append(pLabelsToDraw, display_hands(pHands, pFrame.shape[1], pFrame.shape[0], pFrame, pLabelsToDraw))
+    for i, line in enumerate(lines):
+        cv.putText(pFrame, line, (10, 25 + i * 25), FONT, 0.6, (0, 255, 0), 2)
