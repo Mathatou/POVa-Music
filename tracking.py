@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 from config import PITCH_HAND, VOLUME_HAND, TASK_MODEL_PATH
 from gestures import is_hand_closed
+import time
 
 @dataclass
 class Hand:
@@ -48,9 +49,16 @@ class HandTracker:
         )
         self.landmarker = HandLandmarker.create_from_options(options)
         self.latest_result = None
+        self.measurements = []
+        self.nbFrames = 0
+        self.timeStart = 0
+        self.doOnce = True
 
-    def on_result(self, result, output_image: mp.Image, timestamp_ms: int):
+    def on_result(self, result, output_image: mp.Image, timestamp_ms: float):
         self.latest_result = result
+        duration = time.monotonic() * 1000 - timestamp_ms
+        self.measurements.append(duration)
+        # print(f"HandLandmarker result received at {timestamp_ms} ms, duration: {duration:.2f} ms")
 
     def detect(self, mp_image, timestamp_ms):
         """
@@ -59,7 +67,11 @@ class HandTracker:
             mp_image (mp.Image): The input image in mediapipe format.
             timestamp_ms (int): The timestamp in milliseconds for the image.
         """
+        if self.doOnce is True:
+            self.timeStart = time.monotonic()*1000
+            self.doOnce = False
         self.landmarker.detect_async(mp_image, timestamp_ms)
+        self.nbFrames += 1
         
     def get_hands(self):
         """
@@ -82,5 +94,7 @@ class HandTracker:
             elif hand_label == VOLUME_HAND:
                 volume_hand = Hand(x=middleFingerBase.x, y=middleFingerBase.y, is_fist = is_hand_closed(pHand_landmarks=hand_landmarks))
         return Hands(pitch=pitch_hand, volume=volume_hand)
-
+    
+    def close(self):
+        self.landmarker.close()
 
