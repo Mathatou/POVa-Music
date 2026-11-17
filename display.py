@@ -27,7 +27,8 @@ def _draw_hand(pFrame, pHand, pColors):
 def _hand_text(pName, pZone, pHand):
     """Build the debug label for a hand and its current zone."""
     state = "fist" if pHand.is_fist else "open"
-    return f"{pName} zone: {pZone} ({state})"
+    numberFingers = pHand.how_many_fingers_up
+    return f"{pName} zone: {pZone} ({state}) fingers up: {numberFingers}"
 
 
 def draw_overlay(pFrame, pHands, pPitchZone, pVolumeZone):

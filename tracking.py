@@ -13,10 +13,12 @@ class Hand:
         x (float): The x-coordinate of the middle finger base, normalized between 0 and 1.
         y (float): The y-coordinate of the middle finger base, normalized between 0 and 1.
         is_fist (bool): A boolean indicating whether the hand is in a fist position.
+        how_many_fingers_up (int): The number of fingers that are up (not in a fist position).
     """
     x : float
     y : float
     is_fist : bool
+    how_many_fingers_up : int
 
 @dataclass
 class Hands : 
@@ -88,11 +90,11 @@ class HandTracker:
             handInfo = result.handedness[idx][0]
             hand_label = handInfo.category_name
             middleFingerBase = hand_landmarks[9]  # middle finger base landmark
-            
+            isTheHandClosed, howManyFingersUp = is_hand_closed(pHand_landmarks=hand_landmarks)
             if hand_label == PITCH_HAND:
-                pitch_hand = Hand(x=middleFingerBase.x, y=middleFingerBase.y, is_fist = is_hand_closed(pHand_landmarks=hand_landmarks))
+                pitch_hand = Hand(x=middleFingerBase.x, y=middleFingerBase.y, is_fist = isTheHandClosed, how_many_fingers_up = howManyFingersUp)
             elif hand_label == VOLUME_HAND:
-                volume_hand = Hand(x=middleFingerBase.x, y=middleFingerBase.y, is_fist = is_hand_closed(pHand_landmarks=hand_landmarks))
+                volume_hand = Hand(x=middleFingerBase.x, y=middleFingerBase.y, is_fist = isTheHandClosed, how_many_fingers_up = howManyFingersUp)
         return Hands(pitch=pitch_hand, volume=volume_hand)
     
     def close(self):
