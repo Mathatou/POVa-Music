@@ -4,8 +4,9 @@ import mediapipe as mp
 import time
 from config import DEBUG_MODE
 from tracking import HandTracker
-from display import draw_overlay 
+from display import draw_overlay, draw_current_note 
 from zones import get_zone_index
+from notes import NOTE_NAMES, zone_to_frequency
 
 
 def RenderCamera():
@@ -22,6 +23,7 @@ def RenderCamera():
         print("Cannot open camera")
         exit()
     tracker = HandTracker()
+    last_pitch_zone = None
     while True:
         # print(tracker.get_hands())
         # Capture frame-by-frame
@@ -34,15 +36,21 @@ def RenderCamera():
         # Convert the BGR image to RGB before processing.
         rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
-        timestamp_ms = int(time.monotonic() * 1000)
         tracker.detect(mp_image)
         hands = tracker.get_hands()
 
         pitch_zone = get_zone_index(hands.pitch.y) if hands.pitch else None
+        if pitch_zone != last_pitch_zone:
+            if pitch_zone is not None:
+                print(f"Note: {NOTE_NAMES[pitch_zone]} | {zone_to_frequency(pitch_zone):.2f} Hz")
+            else:
+                print("No pitch hand")
+            last_pitch_zone = pitch_zone
         volume_zone = get_zone_index(hands.volume.y) if hands.volume else None
         frame = cv.flip(frame, 1) #flip the frame horizontally
         if debug is True:
             draw_overlay(frame, hands, pitch_zone, volume_zone)
+        draw_current_note(frame, pitch_zone)
         cv.imshow('MusicGen',frame)
         key = cv.waitKey(1)
         if key == ord('q'): #close on 'q' key
