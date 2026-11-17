@@ -35,7 +35,7 @@ def RenderCamera():
         rgb_frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB)
         mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
         timestamp_ms = int(time.monotonic() * 1000)
-        tracker.detect(mp_image, timestamp_ms)
+        tracker.detect(mp_image)
         hands = tracker.get_hands()
 
         pitch_zone = get_zone_index(hands.pitch.y) if hands.pitch else None
