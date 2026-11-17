@@ -1,3 +1,5 @@
+import time
+
 import mediapipe as mp
 from dataclasses import dataclass
 from typing import Optional
@@ -55,6 +57,7 @@ class HandTracker:
         self.nbFrames = 0
         self.timeStart = 0
         self.doOnce = True
+        self._last_ts = -1
 
     def on_result(self, result, output_image: mp.Image, timestamp_ms: float):
         self.latest_result = result
@@ -62,17 +65,21 @@ class HandTracker:
         self.measurements.append(duration)
         # print(f"HandLandmarker result received at {timestamp_ms} ms, duration: {duration:.2f} ms")
 
-    def detect(self, mp_image, timestamp_ms):
+    def detect(self, mp_image):
         """
         Detect hands in the given image.
         Args:
             mp_image (mp.Image): The input image in mediapipe format.
             timestamp_ms (int): The timestamp in milliseconds for the image.
         """
+        ts = time.perf_counter_ns() // 1000
+        if ts <= self._last_ts:
+            ts = self._last_ts + 1
+        self._last_ts = ts
         if self.doOnce is True:
             self.timeStart = time.monotonic()*1000
             self.doOnce = False
-        self.landmarker.detect_async(mp_image, timestamp_ms)
+        self.landmarker.detect_async(mp_image, ts)
         self.nbFrames += 1
         
     def get_hands(self):
